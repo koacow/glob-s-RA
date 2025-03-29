@@ -69,6 +69,8 @@ def processSampleData():
     # Read and concatenate all CSV files using Dask
     ddf = dd.read_csv(csv_files)
     merged_df = ddf.compute()
+
+    printResults(merged_df)
     
     # Write the merged DataFrame to a CSV file
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -87,6 +89,7 @@ def processGDELTData(start_year=1995, end_year=2025):
     if start_year > end_year:
         raise ValueError("Start year must be less than or equal to end year")
     
+    print("====== GDELT Data Fetching ======")
     print(f"Fetching GDELT data from {start_year} to {end_year}...")
     query_results_dir = './query-results'
     output_dir = './output'
@@ -109,12 +112,27 @@ def processGDELTData(start_year=1995, end_year=2025):
     # Merge all CSV files into a single Dask DataFrame
     ddf = dd.read_csv(csv_files)
     merged_df = ddf.compute()
+
+    printResults(merged_df)
     
     # Write the merged DataFrame to a CSV file
     merged_df.to_csv(merged_output_file, index=False)
     print(f"Merged GDELT data saved to {merged_output_file}.")
     print("Done.")
     return
+
+def printResults(df):
+    """
+    Print details of the DataFrame.
+    """
+    if not isinstance(df, pd.DataFrame):
+        raise ValueError("Input must be a pandas DataFrame")
+    print("====== Merged DataFrame =======")
+    print(df.info())
+    print(df['Actor1CountryCode'].value_counts())
+    print(df['Actor2CountryCode'].value_counts())
+    print(df['YYYYMM'].value_counts().sort_values(ascending=False))
+    print("================================")
 
 def printHelp():
     """
@@ -133,6 +151,10 @@ def main():
     args = sys.argv[1:]
     if len(args) == 0 or '-h' in args or '--help' in args:
         printHelp()
+        return
+    if '-test' in args:
+        print("Running test...")
+        processSampleData()
         return
     for arg in args:
         if not arg.isdigit():
