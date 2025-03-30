@@ -1,0 +1,263 @@
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
+  warnings.warn(
+====== GDELT Data Fetching ======
+Fetching GDELT data from 1995 to 2025...
+Fetching GDELT data for year 1995...
+Fetched 37575 rows for year 1995.
+Fetching GDELT data for year 1996...
+Fetched 45654 rows for year 1996.
+Fetching GDELT data for year 1997...
+Fetched 53992 rows for year 1997.
+Fetching GDELT data for year 1998...
+Fetched 55055 rows for year 1998.
+Fetching GDELT data for year 1999...
+Fetched 59274 rows for year 1999.
+Fetching GDELT data for year 2000...
+Fetched 61316 rows for year 2000.
+Fetching GDELT data for year 2001...
+Fetched 63211 rows for year 2001.
+Fetching GDELT data for year 2002...
+Fetched 60434 rows for year 2002.
+Fetching GDELT data for year 2003...
+Fetched 66972 rows for year 2003.
+Fetching GDELT data for year 2004...
+Fetched 64211 rows for year 2004.
+Fetching GDELT data for year 2005...
+Fetched 56769 rows for year 2005.
+Fetching GDELT data for year 2006...
+Fetched 67287 rows for year 2006.
+Fetching GDELT data for year 2007...
+Fetched 76658 rows for year 2007.
+Fetching GDELT data for year 2008...
+Fetched 88107 rows for year 2008.
+Fetching GDELT data for year 2009...
+Fetched 121139 rows for year 2009.
+Fetching GDELT data for year 2010...
+Fetched 108651 rows for year 2010.
+Fetching GDELT data for year 2011...
+Fetched 122198 rows for year 2011.
+Fetching GDELT data for year 2012...
+Fetched 121643 rows for year 2012.
+Fetching GDELT data for year 2013...
+Fetched 124074 rows for year 2013.
+Fetching GDELT data for year 2014...
+Fetched 138545 rows for year 2014.
+Fetching GDELT data for year 2015...
+Fetched 158592 rows for year 2015.
+Fetching GDELT data for year 2016...
+Fetched 163764 rows for year 2016.
+Fetching GDELT data for year 2017...
+Fetched 158040 rows for year 2017.
+Fetching GDELT data for year 2018...
+Fetched 153606 rows for year 2018.
+Fetching GDELT data for year 2019...
+Fetched 148267 rows for year 2019.
+Fetching GDELT data for year 2020...
+Fetched 127241 rows for year 2020.
+Fetching GDELT data for year 2021...
+Fetched 127827 rows for year 2021.
+Fetching GDELT data for year 2022...
+Fetched 124970 rows for year 2022.
+Fetching GDELT data for year 2023...
+Fetched 140522 rows for year 2023.
+Fetching GDELT data for year 2024...
+Fetched 137716 rows for year 2024.
+Fetching GDELT data for year 2025...
+Fetched 32743 rows for year 2025.
+====== Merged DataFrame =======
+<class 'pandas.core.frame.DataFrame'>
+Index: 3066053 entries, 0 to 63210
+Data columns (total 5 columns):
+ #   Column             Dtype  
+---  ------             -----  
+ 0   Actor1CountryCode  string 
+ 1   Actor2CountryCode  string 
+ 2   YYYY               int64  
+ 3   MM                 int64  
+ 4   AvgGoldsteinScale  float64
+dtypes: float64(1), int64(2), string(2)
+memory usage: 157.9 MB
+None
+================================
+Number of non-null values per column:
+Actor1CountryCode    3066053
+Actor2CountryCode    3066053
+YYYY                 3066053
+MM                   3066053
+AvgGoldsteinScale    3066052
+dtype: int64
+================================
+Number of unique Actor1CountryCode per month:
+         Actor1CountryCode
+YYYY MM                   
+1995 1                 173
+     2                 177
+     3                 183
+     4                 183
+     5                 180
+...                    ...
+2024 11                195
+     12                195
+2025 1                 194
+     2                 194
+     3                 195
+
+[363 rows x 1 columns]
+================================
+Number of unique Actor1CountryCode per year:
+      Actor1CountryCode
+YYYY                   
+1995                192
+1996                193
+1997                192
+1998                192
+1999                193
+2000                193
+2001                193
+2002                193
+2003                194
+2004                195
+2005                194
+2006                193
+2007                194
+2008                194
+2009                196
+2010                195
+2011                194
+2012                196
+2013                196
+2014                196
+2015                196
+2016                195
+2017                195
+2018                196
+2019                195
+2020                195
+2021                195
+2022                195
+2023                195
+2024                195
+2025                195
+================================
+Number of unique Actor2CountryCode per month:
+         Actor2CountryCode
+YYYY MM                   
+1995 1                 175
+     2                 176
+     3                 183
+     4                 182
+     5                 183
+...                    ...
+2024 11                195
+     12                195
+2025 1                 195
+     2                 195
+     3                 195
+
+[363 rows x 1 columns]
+================================
+Number of unique Actor2CountryCode per year:
+      Actor2CountryCode
+YYYY                   
+1995                192
+1996                193
+1997                192
+1998                192
+1999                192
+2000                193
+2001                193
+2002                193
+2003                194
+2004                194
+2005                194
+2006                194
+2007                195
+2008                195
+2009                196
+2010                195
+2011                194
+2012                196
+2013                196
+2014                196
+2015                196
+2016                195
+2017                196
+2018                196
+2019                195
+2020                195
+2021                195
+2022                195
+2023                195
+2024                195
+2025                195
+================================
+Number of rows per year:
+YYYY
+2016    163764
+2015    158592
+2017    158040
+2018    153606
+2019    148267
+2023    140522
+2014    138545
+2024    137716
+2021    127827
+2020    127241
+2022    124970
+2013    124074
+2011    122198
+2012    121643
+2009    121139
+2010    108651
+2008     88107
+2007     76658
+2006     67287
+2003     66972
+2004     64211
+2001     63211
+2000     61316
+2002     60434
+1999     59274
+2005     56769
+1998     55055
+1997     53992
+1996     45654
+1995     37575
+2025     32743
+Name: count, dtype: int64
+================================
+Merged GDELT data saved to /Users/koacow/repos/glob-s-RA/output/merged_gdelt_data_20250329_1502.csv.
+Query results written to //Users/koacow/repos/glob-s-RA/query-results.
+Done.

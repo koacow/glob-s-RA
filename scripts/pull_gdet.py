@@ -4,6 +4,7 @@ import dask.dataframe as dd
 import pandas as pd
 import os
 import sys
+import logging
 
 def getGDELTData(year):
     """
@@ -39,7 +40,8 @@ def getGDELTData(year):
         SELECT 
             Country AS Actor1CountryCode,
             PartnerCountry AS Actor2CountryCode,
-            FORMAT('%04d/%02d', EventYear, EventMonth) AS YYYYMM,
+            CAST(EventYear AS INT64) AS YYYY,
+            CAST(EventMonth AS INT64) AS MM, 
             AvgGoldsteinScale
         FROM 
             CalculatedAverages
@@ -68,6 +70,8 @@ def processSampleData():
     
     # Read and concatenate all CSV files using Dask
     ddf = dd.read_csv(csv_files)
+    ddf["YYYY"] = ddf["YYYYMM"].str[:4].astype(int)
+    ddf["MM"] = ddf["YYYYMM"].str[5:].astype(int)
     merged_df = ddf.compute()
 
     printResults(merged_df)
@@ -91,9 +95,11 @@ def processGDELTData(start_year=1995, end_year=2025):
     
     print("====== GDELT Data Fetching ======")
     print(f"Fetching GDELT data from {start_year} to {end_year}...")
-    query_results_dir = './query-results'
-    output_dir = './output'
-    merged_output_file = os.path.join(output_dir, 'merged_gdelt_data.csv')
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+    current_dir = os.getcwd()
+    query_results_dir = os.path.join(current_dir, 'query-results')
+    output_dir = os.path.join(current_dir, 'output')
+    merged_output_file = os.path.join(output_dir, f'merged_gdelt_data_{timestamp}.csv')
     
     # Ensure directories exist
     os.makedirs(query_results_dir, exist_ok=True)
@@ -113,11 +119,13 @@ def processGDELTData(start_year=1995, end_year=2025):
     ddf = dd.read_csv(csv_files)
     merged_df = ddf.compute()
 
+
     printResults(merged_df)
     
     # Write the merged DataFrame to a CSV file
     merged_df.to_csv(merged_output_file, index=False)
     print(f"Merged GDELT data saved to {merged_output_file}.")
+    print(f"Query results written to /{query_results_dir}.")
     print("Done.")
     return
 
@@ -125,13 +133,28 @@ def printResults(df):
     """
     Print details of the DataFrame.
     """
-    if not isinstance(df, pd.DataFrame):
-        raise ValueError("Input must be a pandas DataFrame")
+    if not isinstance(df, pd.DataFrame) and not isinstance(df, dd.DataFrame):
+        raise ValueError("Input must be a Pandas or Dask DataFrame")
     print("====== Merged DataFrame =======")
     print(df.info())
-    print(df['Actor1CountryCode'].value_counts())
-    print(df['Actor2CountryCode'].value_counts())
-    print(df['YYYYMM'].value_counts().sort_values(ascending=False))
+    print("================================")
+    print("Number of non-null values per column:")
+    print(df.notnull().sum())
+    print("================================")
+    print("Number of unique Actor1CountryCode per month:")
+    print(df.groupby(["YYYY", "MM"])[["Actor1CountryCode"]].nunique())
+    print("================================")
+    print("Number of unique Actor1CountryCode per year:")
+    print(df.groupby(["YYYY"])[["Actor1CountryCode"]].nunique())
+    print("================================")
+    print("Number of unique Actor2CountryCode per month:")
+    print(df.groupby(["YYYY", "MM"])[["Actor2CountryCode"]].nunique())
+    print("================================")
+    print("Number of unique Actor2CountryCode per year:")
+    print(df.groupby(["YYYY"])[["Actor2CountryCode"]].nunique())
+    print("================================")
+    print("Number of rows per year:")
+    print(df["YYYY"].value_counts())
     print("================================")
 
 def printHelp():
@@ -143,11 +166,25 @@ def printHelp():
     print("Default range is from 1995 to the current year.")
     print("Options:")
     print("  -h, --help    Show this help message and exit.")
+    print("  -test         Run a test with sample data.")
+    print("Arguments:")
+    print("  start_year    The starting year (inclusive). Default is 1995.")
+    print("  end_year      The ending year (inclusive). If not specified, the script pulls data for the starting year.")
     print("Example:")
     print("python3 pull_gdet.py 2000 2020")
     return
 
 def main():
+    Set up logging to write stdout to a log file
+    log_output_dir = './logs'
+    os.makedirs(log_output_dir, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+    log_file = os.path.join(log_output_dir, f'pull_gdet_{timestamp}.log')
+    logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(message)s')
+    sys.stdout = open(log_file, 'a')  # Redirect stdout to the log file
+    sys.stderr = open(log_file, 'a')  # Redirect stderr to the log file
+
+
     args = sys.argv[1:]
     if len(args) == 0 or '-h' in args or '--help' in args:
         printHelp()
@@ -163,10 +200,9 @@ def main():
             return
 
     start_year = sys.argv[1] if len(sys.argv) > 1 else 1995
-    end_year = sys.argv[2] if len(sys.argv) > 2 else datetime.now().year
+    end_year = sys.argv[2] if len(sys.argv) > 2 else start_year
     start_year = int(start_year)
     end_year = int(end_year)
     processGDELTData(start_year, end_year)
-
 if __name__ == "__main__":
     main()
