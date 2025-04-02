@@ -1,37 +1,3 @@
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
-/opt/miniconda3/lib/python3.12/site-packages/google/cloud/bigquery/table.py:1933: UserWarning: BigQuery Storage module not found, fetch data with the REST endpoint instead.
-  warnings.warn(
 ====== GDELT Data Fetching ======
 Fetching GDELT data from 1995 to 2025...
 Fetching GDELT data for year 1995...

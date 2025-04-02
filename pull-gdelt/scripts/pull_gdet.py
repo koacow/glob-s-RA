@@ -16,6 +16,7 @@ def getGDELTData(year):
         raise ValueError("Year must be between 1995 and 2025")
     client = bigquery.Client()
     print(f"Fetching GDELT data for year {year}...")
+    # Define the SQL query to fetch data
     query = f"""
         WITH CalculatedAverages AS (
             SELECT
@@ -49,6 +50,7 @@ def getGDELTData(year):
     rows = client.query_and_wait(query)
     rows_df = rows.to_dataframe()
     print(f"Fetched {len(rows_df)} rows for year {year}.")
+    # Write the DataFrame to a CSV file
     rows_df.to_csv(f'./query-results/gdelt_{year}.csv', index=False)
     return 
 
@@ -175,7 +177,7 @@ def printHelp():
     return
 
 def main():
-    Set up logging to write stdout to a log file
+    # Set up logging to write stdout to a log file
     log_output_dir = './logs'
     os.makedirs(log_output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
