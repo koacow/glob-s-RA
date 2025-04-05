@@ -1,5 +1,7 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+import app from "./app";
+import config from "./config/config";
 
-const app = express();
+app.listen(config.port, () => {
+    console.log(`Server is running on port ${config.port}`);
+    console.log(`Environment: ${config.nodeEnv}`);
+});
