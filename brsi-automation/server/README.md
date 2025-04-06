@@ -23,6 +23,10 @@ cd server
 npm install
 ```
 
+### Authenticate with Google Cloud using Application Default Credentials (ADC)
+
+Follow the instructions in the [Google Cloud documentation](https://cloud.google.com/docs/authentication/set-up-adc-local-dev-environment) to set up Application Default Credentials (ADC) for your Google Cloud project. This is required to authenticate with Google Cloud BigQuery.
+
 ### Environment Variables
 
 Create a `.env` file in the root directory of the project and add the environment variables according to the `.env.example` file. The required environment variables are:
@@ -67,10 +71,11 @@ curl -X GET http://localhost:4000/api/brsi?actor1CountryCode=USA&actor2CountryCo
 
 ## Future TODOs
 
+- **Migrate to Go or Java**: The current implementation is in Node.js, but we plan to migrate to Go or Java for better performance and scalability.
+- Get a service account key from Google Cloud and use it to authenticate with BigQuery.
 - Add authentication to the API.
 - Add error handling and logging.
 - Add more API endpoints for different queries.
 - Aggregate data by day instead of month to increase granularity.
 - Use WebSockets to push data to the client in real-time.
 - Add a frontend to visualize the data.
-
