@@ -3,6 +3,7 @@ from supabase import create_client, Client
 from supabase.client import ClientOptions
 import os
 from dotenv import load_dotenv
+from google.cloud import bigquery
 
 load_dotenv()
 url = os.getenv("SUPABASE_URL")
@@ -12,31 +13,70 @@ supabase: Client = create_client(
                                     key,
                                 )
 
-def upload_to_supabase():
-    df = dd.read_csv(os.path.join(os.path.dirname(__file__), '../output/merged_gdelt_data_20250329_1502.csv'))
-    df = df.compute()
+def fetch_gdelt_data_for_year(year):
+    if not isinstance(year, int):
+        raise ValueError("Year must be an integer")
+    if year < 1995 or year > 2025:
+        raise ValueError("Year must be between 1995 and 2025")
+    client = bigquery.Client()
+    print(f"Fetching GDELT data for year {year}...")
+    query = '''
+    WITH DailyAverages AS (
+        SELECT
+            cp.Actor1CountryCode AS Country,
+            cp.Actor2CountryCode AS PartnerCountry,
+            EXTRACT(MONTH FROM PARSE_DATE('%Y%m%d', CAST(e.SQLDATE AS STRING))) AS EventMonth,
+            EXTRACT(YEAR FROM PARSE_DATE('%Y%m%d', CAST(e.SQLDATE AS STRING))) AS EventYear,
+            EXTRACT(DAY FROM PARSE_DATE('%Y%m%d', CAST(e.SQLDATE AS STRING))) AS EventDay,
+            AVG(e.GoldsteinScale) AS AvgGoldsteinScale
+        FROM
+            `218_Countries.Pairs` cp  -- Use the correct dataset and table name here
+        JOIN
+            `gdelt-bq.full.events` e
+        ON cp.Actor1CountryCode = e.Actor1CountryCode AND cp.Actor2CountryCode = e.Actor2CountryCode
+        WHERE
+            e.Year = 1995  -- Adjust this to the specific year you're interested in
+        GROUP BY
+            Country,
+            PartnerCountry,
+            EventMonth,
+            EventYear,
+            EventDay
+    )
+    SELECT 
+        Country AS Actor1CountryCode,
+        PartnerCountry AS Actor2CountryCode,
+        EventDay AS Day,
+        EventMonth AS Month,
+        EventYear AS Year,
+        AvgGoldsteinScale
+    FROM 
+        DailyAverages
+    '''
+    rows = client.query_and_wait(query)
+    rows = rows.to_dataframe()
+    rows = rows.to_dict(orient="records")
+    print("Fetched %d rows for year %d.", len(rows), year)
+    print(rows[:5])
+    return rows
     
-    chunk_size = 200000
-    for i in range(0, len(df), chunk_size):
-        chunk = []
-        if i + chunk_size <= len(df):
-            chunk = df.iloc[i:i + chunk_size]
-        else:
-            chunk = df.iloc[i:]
-        data = chunk.to_dict(orient="records")
 
-        print(f"Uploading chunk {i // chunk_size + 1} with {len(data)} records")
-        response = None
-        try:
-            response = supabase.table("gdelt_monthly").insert(data, returning="minimal").execute()
-            
-        except Exception as e:
-            print(f"An exception occurred while uploading chunk {i // chunk_size + 1}: {e}")
-            print(f"Supabase response: {response}")
-        else:
-            print(f"Chunk {i // chunk_size + 1} uploaded successfully.")
+def upload_to_supabase(rows):
+    """
+    Upload the fetched GDELT data to Supabase.
+    """
+    if not rows or not isinstance(rows, list):
+        raise ValueError("Rows must be a non-empty list")
+    print(f"Uploading {len(rows)} rows to Supabase...")
+    supabase.table("gdelt_daily").insert(rows).execute()
+    print("Data upload completed.")
 
 if __name__ == "__main__":
-    upload_to_supabase()
-    print("Upload completed.")
+    startYear = 1995
+    endYear = 1996
+    print(f"Fetching and uploading GDELT data from {startYear} to {endYear - 1}...")
+    for year in range(startYear, endYear):
+        rows = fetch_gdelt_data_for_year(year)
+        upload_to_supabase(rows)
+    print("Done.")
 
