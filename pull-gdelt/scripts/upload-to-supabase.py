@@ -76,7 +76,11 @@ if __name__ == "__main__":
     endYear = 1996
     print(f"Fetching and uploading GDELT data from {startYear} to {endYear - 1}...")
     for year in range(startYear, endYear):
-        rows = fetch_gdelt_data_for_year(year)
-        upload_to_supabase(rows)
+        try:
+            rows = fetch_gdelt_data_for_year(year)
+            upload_to_supabase(rows)
+        except Exception as e:
+            print(f"Error processing year {year}: {e}, aborting.")
+            break
     print("Done.")
 
