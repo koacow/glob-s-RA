@@ -2,7 +2,7 @@ import { BigQuery } from '@google-cloud/bigquery';
 import { Database } from '../models/supabase';
 import supabase from '../config/supabase';
 
-type GDELTRowUpdate = Database['public']['Tables']['gdelt_monthly']['Insert']
+type GDELTRowUpdate = Database['public']['Tables']['gdelt_daily']['Insert']
 
 
 async function pullGdeltData(): Promise<GDELTRowUpdate[]> {
@@ -58,7 +58,7 @@ async function updateSupabaseGdeltData(rows: GDELTRowUpdate[]) {
 
     try {
         const { data, error } = await supabase
-            .from('gdelt_monthly')
+            .from('gdelt_daily')
             .upsert(rows, { 
                 onConflict: 'Actor1CountryCode, Actor2CountryCode, Year, Month',
                 count: 'exact',
@@ -87,6 +87,7 @@ async function updateSupabaseGdeltData(rows: GDELTRowUpdate[]) {
 // }
 
 export default async function runJob() {
+    return;
     const rows = await pullGdeltData();
     if (rows.length > 0) {
         await updateSupabaseGdeltData(rows);
