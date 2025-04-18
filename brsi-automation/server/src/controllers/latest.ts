@@ -1,4 +1,5 @@
 import supabase from "../config/supabase";
+import { Database } from "../models/supabase";
 import { Request, Response, NextFunction } from "express";
 
 export const getLatestRecords = async (req: Request, res: Response, next: NextFunction) => {
@@ -8,20 +9,31 @@ export const getLatestRecords = async (req: Request, res: Response, next: NextFu
             res.status(400).json({ error: "Missing required parameters" });
             return;
         }
+        const response = {
+            actor1CountryCode: actor1CountryCode,
+            actor2CountryCode: actor2CountryCode,
+            range: range,
+            numRecords: 0,
+            records: [] as Database["public"]["Tables"]["gdelt_daily"]["Row"][],
+        }
         switch (range) {
             case "5D":
                 const fiveDayRecords = await getFiveDayRecords(actor1CountryCode, actor2CountryCode);
                 if (fiveDayRecords.length === 0) {
                     res.status(404).json({ message: "No records found" });
                 } else {
-                    res.status(200).json(fiveDayRecords);
+                    response.numRecords = fiveDayRecords.length;
+                    response.records = fiveDayRecords;
+                    res.status(200).json(response);
                 }
             case "1M":
                 const oneMonthRecords = await getOneMonthRecords(actor1CountryCode, actor2CountryCode);
                 if (oneMonthRecords.length === 0) {
                     res.status(404).json({ message: "No records found" });
                 } else {
-                    res.status(200).json(oneMonthRecords);
+                    response.numRecords = oneMonthRecords.length;
+                    response.records = oneMonthRecords;
+                    res.status(200).json(response);
                 }
                 return;
             case "3M":
@@ -29,7 +41,9 @@ export const getLatestRecords = async (req: Request, res: Response, next: NextFu
                 if (threeMonthRecords.length === 0) {
                     res.status(404).json({ message: "No records found" });
                 } else {
-                    res.status(200).json(threeMonthRecords);
+                    response.numRecords = threeMonthRecords.length;
+                    response.records = threeMonthRecords;
+                    res.status(200).json(response);
                 }
                 return;
             case "1Y":
@@ -37,7 +51,9 @@ export const getLatestRecords = async (req: Request, res: Response, next: NextFu
                 if (oneYearRecords.length === 0) {
                     res.status(404).json({ message: "No records found" });
                 } else {
-                    res.status(200).json(oneYearRecords);
+                    response.numRecords = oneYearRecords.length;
+                    response.records = oneYearRecords;
+                    res.status(200).json(response);
                 }
                 return;
             case "5Y":
@@ -45,7 +61,9 @@ export const getLatestRecords = async (req: Request, res: Response, next: NextFu
                 if (fiveYearRecords.length === 0) {
                     res.status(404).json({ message: "No records found" });
                 } else {
-                    res.status(200).json(fiveYearRecords);
+                    response.numRecords = fiveYearRecords.length;
+                    response.records = fiveYearRecords;
+                    res.status(200).json(response);
                 }
                 return;
             case "MAX":
@@ -53,7 +71,9 @@ export const getLatestRecords = async (req: Request, res: Response, next: NextFu
                 if (maxRecords.length === 0) {
                     res.status(404).json({ message: "No records found" });
                 } else {
-                    res.status(200).json(maxRecords);
+                    response.numRecords = maxRecords.length;
+                    response.records = maxRecords;
+                    res.status(200).json(response);
                 }
                 return;
             default:
@@ -133,7 +153,7 @@ const getOneYearRecords = async (actor1CountryCode: string, actor2CountryCode: s
 const getFiveYearRecords = async (actor1CountryCode: string, actor2CountryCode: string) => {
     const { data, error } = await supabase
         .from("gdelt_daily")
-        .select("actor1CountryCode, actor2CountryCode, Year, Month, Day")
+        .select("*")
         .eq("Actor1CountryCode", actor1CountryCode)
         .eq("Actor2CountryCode", actor2CountryCode)
         .order("Year", { ascending: false })
