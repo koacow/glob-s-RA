@@ -8,35 +8,42 @@ type GDELTRowUpdate = Database['public']['Tables']['gdelt_daily']['Insert']
 async function pullGdeltData(): Promise<GDELTRowUpdate[]> {
     const bigqueryClient = new BigQuery();
     const year = new Date().getFullYear();
+    const month = new Date().getMonth() + 1; // Months are 0-indexed in JavaScript
+    const day = new Date().getDate();
+    const dateString = `${year}${month.toString().padStart(2, '0')}${day.toString().padStart(2, '0')}`;
+    console.log(`Pulling GDELT data for date: ${dateString}`);
     const query = (
-        `WITH CalculatedAverages AS (
-            SELECT
-                cp.Actor1CountryCode AS Country,
-                cp.Actor2CountryCode AS PartnerCountry,
-                EXTRACT(MONTH FROM PARSE_DATE('%Y%m%d', CAST(e.SQLDATE AS STRING))) AS EventMonth,
-                EXTRACT(YEAR FROM PARSE_DATE('%Y%m%d', CAST(e.SQLDATE AS STRING))) AS EventYear,
-                AVG(e.GoldsteinScale) AS AvgGoldsteinScale
-            FROM
-                \`218_Countries.Pairs\` cp  -- Use the correct dataset and table name here
-            JOIN
-                \`gdelt-bq.full.events\` e
-            ON cp.Actor1CountryCode = e.Actor1CountryCode AND cp.Actor2CountryCode = e.Actor2CountryCode
-            WHERE
-                e.Year = ${year}  -- Adjust this to the specific year you're interested in
-            GROUP BY
-                Country,
-                PartnerCountry,
-                EventMonth,
-                EventYear
-        )
-        SELECT 
-            Country AS Actor1CountryCode,
-            PartnerCountry AS Actor2CountryCode,
-            CAST(EventYear AS INT64) AS Year,
-            CAST(EventMonth AS INT64) AS Month, 
-            AvgGoldsteinScale
-        FROM 
-            CalculatedAverages`
+        `WITH DailyAverages AS (
+        SELECT
+            cp.Actor1CountryCode AS Country,
+            cp.Actor2CountryCode AS PartnerCountry,
+            EXTRACT(MONTH FROM PARSE_DATE('%Y%m%d', CAST(e.SQLDATE AS STRING))) AS EventMonth,
+            EXTRACT(YEAR FROM PARSE_DATE('%Y%m%d', CAST(e.SQLDATE AS STRING))) AS EventYear,
+            EXTRACT(DAY FROM PARSE_DATE('%Y%m%d', CAST(e.SQLDATE AS STRING))) AS EventDay,
+            AVG(e.GoldsteinScale) AS AvgGoldsteinScale
+        FROM
+            "218_Countries.Pairs" cp  -- Use the correct dataset and table name here
+        JOIN
+            "gdelt-bq.full.events" e
+        ON cp.Actor1CountryCode = e.Actor1CountryCode AND cp.Actor2CountryCode = e.Actor2CountryCode
+        WHERE
+            e.Day = ${dateString}
+        GROUP BY
+            Country,
+            PartnerCountry,
+            EventMonth,
+            EventYear,
+            EventDay
+    )
+    SELECT 
+        Country AS Actor1CountryCode,
+        PartnerCountry AS Actor2CountryCode,
+        EventDay AS Day,
+        EventMonth AS Month,
+        EventYear AS Year,
+        AvgGoldsteinScale
+    FROM 
+        DailyAverages`
     );
     const options = {
         query: query,
@@ -60,7 +67,7 @@ async function updateSupabaseGdeltData(rows: GDELTRowUpdate[]) {
         const { data, error } = await supabase
             .from('gdelt_daily')
             .upsert(rows, { 
-                onConflict: 'Actor1CountryCode, Actor2CountryCode, Year, Month',
+                onConflict: 'Actor1CountryCode, Actor2CountryCode, Year, Month, Day',
                 count: 'exact',
                 ignoreDuplicates: false, 
             })
