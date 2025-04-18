@@ -13,14 +13,18 @@ supabase: Client = create_client(
                                     key,
                                 )
 
-def fetch_gdelt_data_for_year(year):
+def fetch_gdelt_data_for_year_and_month(year, month):
     if not isinstance(year, int):
         raise ValueError("Year must be an integer")
     if year < 1995 or year > 2025:
         raise ValueError("Year must be between 1995 and 2025")
+    if not isinstance(month, int):
+        raise ValueError("Month must be an integer")
+    if month < 1 or month > 12:
+        raise ValueError("Month must be between 1 and 12")
     client = bigquery.Client()
-    print(f"Fetching GDELT data for year {year}...")
-    query = '''
+    print(f"Fetching GDELT data for {year}-{month:02d}...")
+    query = f'''
     WITH DailyAverages AS (
         SELECT
             cp.Actor1CountryCode AS Country,
@@ -35,7 +39,7 @@ def fetch_gdelt_data_for_year(year):
             `gdelt-bq.full.events` e
         ON cp.Actor1CountryCode = e.Actor1CountryCode AND cp.Actor2CountryCode = e.Actor2CountryCode
         WHERE
-            e.Year = 1995  -- Adjust this to the specific year you're interested in
+            e.MonthYear = {year}{month:02d}
         GROUP BY
             Country,
             PartnerCountry,
@@ -57,7 +61,6 @@ def fetch_gdelt_data_for_year(year):
     rows = rows.to_dataframe()
     rows = rows.to_dict(orient="records")
     print("Fetched %d rows for year %d.", len(rows), year)
-    print(rows[:5])
     return rows
     
 
@@ -72,15 +75,17 @@ def upload_to_supabase(rows):
     print("Data upload completed.")
 
 if __name__ == "__main__":
-    startYear = 1995
-    endYear = 1996
+    # Database currently contains data up to December 2012.
+    startYear = 2013
+    endYear = 2026
     print(f"Fetching and uploading GDELT data from {startYear} to {endYear - 1}...")
-    for year in range(startYear, endYear):
-        try:
-            rows = fetch_gdelt_data_for_year(year)
-            upload_to_supabase(rows)
-        except Exception as e:
-            print(f"Error processing year {year}: {e}, aborting.")
-            break
+    for year in range(startYear + 1, endYear):
+        for month in range (1, 13):
+            try:
+                rows = fetch_gdelt_data_for_year_and_month(year, month)
+                upload_to_supabase(rows)
+            except Exception as e:
+                print(f"Error processing year {year} month {month}: {e}, aborting.")
+                break
     print("Done.")
 
