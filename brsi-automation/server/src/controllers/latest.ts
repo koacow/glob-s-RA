@@ -1,183 +1,111 @@
 import supabase from "../config/supabase";
-import { Database } from "../models/supabase";
+import { Database } from "../models/database.supabase";
+import { BRSILatestQueryParams, BRSILatestResponse } from "../models/brsiLatest";
 import { Request, Response, NextFunction } from "express";
+
+
+const aggregateLevels = ["daily", "monthly", "yearly"];
 
 export const getLatestRecords = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { actor1CountryCode, actor2CountryCode, range } = req.query as { actor1CountryCode: string, actor2CountryCode: string, range: string };
-        if (!actor1CountryCode || !actor2CountryCode || !range) {
+        // TODO: Validate the request parameters in a middleware
+        const { aggregateLevel } = req.params;
+        if (!aggregateLevel || !aggregateLevels.includes(aggregateLevel)) {
+            res.status(400).json({ error: "Invalid aggregate level" });
+            return;
+        }
+        const { actor1CountryCode, actor2CountryCode, startDate, endDate } = req.query as unknown as BRSILatestQueryParams;
+
+        if (!actor1CountryCode || !actor2CountryCode || !startDate || !endDate) {
             res.status(400).json({ error: "Missing required parameters" });
             return;
         }
-        const response = {
-            actor1CountryCode: actor1CountryCode,
-            actor2CountryCode: actor2CountryCode,
-            range: range,
-            numRecords: 0,
-            records: [] as Database["public"]["Tables"]["gdelt_daily"]["Row"][],
-        }
-        switch (range) {
-            case "5D":
-                const fiveDayRecords = await getFiveDayRecords(actor1CountryCode, actor2CountryCode);
-                if (fiveDayRecords.length === 0) {
-                    res.status(404).json({ message: "No records found" });
-                } else {
-                    response.numRecords = fiveDayRecords.length;
-                    response.records = fiveDayRecords;
-                    res.status(200).json(response);
-                }
-            case "1M":
-                const oneMonthRecords = await getOneMonthRecords(actor1CountryCode, actor2CountryCode);
-                if (oneMonthRecords.length === 0) {
-                    res.status(404).json({ message: "No records found" });
-                } else {
-                    response.numRecords = oneMonthRecords.length;
-                    response.records = oneMonthRecords;
-                    res.status(200).json(response);
-                }
-                return;
-            case "3M":
-                const threeMonthRecords = await getThreeMonthRecords(actor1CountryCode, actor2CountryCode);
-                if (threeMonthRecords.length === 0) {
-                    res.status(404).json({ message: "No records found" });
-                } else {
-                    response.numRecords = threeMonthRecords.length;
-                    response.records = threeMonthRecords;
-                    res.status(200).json(response);
-                }
-                return;
-            case "1Y":
-                const oneYearRecords = await getOneYearRecords(actor1CountryCode, actor2CountryCode);
-                if (oneYearRecords.length === 0) {
-                    res.status(404).json({ message: "No records found" });
-                } else {
-                    response.numRecords = oneYearRecords.length;
-                    response.records = oneYearRecords;
-                    res.status(200).json(response);
-                }
-                return;
-            case "5Y":
-                const fiveYearRecords = await getFiveYearRecords(actor1CountryCode, actor2CountryCode);
-                if (fiveYearRecords.length === 0) {
-                    res.status(404).json({ message: "No records found" });
-                } else {
-                    response.numRecords = fiveYearRecords.length;
-                    response.records = fiveYearRecords;
-                    res.status(200).json(response);
-                }
-                return;
-            case "MAX":
-                const maxRecords = await getMaxRecords(actor1CountryCode, actor2CountryCode);
-                if (maxRecords.length === 0) {
-                    res.status(404).json({ message: "No records found" });
-                } else {
-                    response.numRecords = maxRecords.length;
-                    response.records = maxRecords;
-                    res.status(200).json(response);
-                }
-                return;
-            default:
-                res.status(400).json({ error: "Invalid range parameter" });
-                return;
 
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+
+        if (startDateObj.toDateString() === "Invalid Date" || endDateObj.toDateString() === "Invalid Date") {
+            res.status(400).json({ error: "Invalid date format" });
+            return;
         }
+        
+        if (startDateObj > endDateObj) {
+            res.status(400).json({ error: "Start date cannot be after end date" });
+            return;
+        }
+
+        const response = {
+            actor1CountryCode,
+            actor2CountryCode,
+            startDate,
+            endDate,
+            aggregateLevel,
+            numRecords: 0,
+            records: []
+        } as BRSILatestResponse;
+        switch (aggregateLevel) {
+            case "daily":
+                const { data: dailyData, error: dailyDataFetchError } = await supabase.rpc("getbrsirecordsaggregatedbyday", {
+                    actor_1_country_code: actor1CountryCode,
+                    actor_2_country_code: actor2CountryCode,
+                    start_day: startDateObj.getDate(),
+                    start_month: startDateObj.getMonth() + 1,
+                    start_year: startDateObj.getFullYear(),
+                    end_day: endDateObj.getDate(),
+                    end_month: endDateObj.getMonth() + 1,
+                    end_year: endDateObj.getFullYear()
+                });
+                if (dailyDataFetchError) {
+                    throw new Error(dailyDataFetchError.message);
+                }
+                response.numRecords = dailyData.length;
+                response.records = dailyData;
+                res.status(200).json(response);
+                return;
+            case "monthly":
+                const { data: monthlyData, error: monthlyDataFetchError } = await supabase.rpc("getbrsirecordsaggregatedbymonth", {
+                    actor_1_country_code: actor1CountryCode,
+                    actor_2_country_code: actor2CountryCode,
+                    start_day: startDateObj.getDate(),
+                    start_month: startDateObj.getMonth() + 1,
+                    start_year: startDateObj.getFullYear(),
+                    end_day: endDateObj.getDate(),
+                    end_month: endDateObj.getMonth() + 1,
+                    end_year: endDateObj.getFullYear()
+                });
+
+                if (monthlyDataFetchError) {
+                    throw new Error(monthlyDataFetchError.message);
+                }
+                response.numRecords = monthlyData.length;
+                response.records = monthlyData;
+                res.status(200).json(response);
+                return;
+            case "yearly":
+                const { data: yearlyData, error: yearlyDataFetchError } = await supabase.rpc("getbrsirecordsaggregatedbyyear", {
+                    actor_1_country_code: actor1CountryCode,
+                    actor_2_country_code: actor2CountryCode,
+                    start_day: startDateObj.getDate(),
+                    start_month: startDateObj.getMonth() + 1,
+                    start_year: startDateObj.getFullYear(),
+                    end_day: endDateObj.getDate(),
+                    end_month: endDateObj.getMonth() + 1,
+                    end_year: endDateObj.getFullYear()
+                });
+                if (yearlyDataFetchError) {
+                    throw new Error(yearlyDataFetchError.message);
+                }
+                response.numRecords = yearlyData.length;
+                response.records = yearlyData;
+                res.status(200).json(response);
+                return;
+            default: 
+                res.status(400).json({ error: "Invalid aggregate level" });
+                return;
+        }
+        res.status(200).json(response);
+        return;
     } catch (error) {
         next(error);
     }
 }
-
-const getFiveDayRecords = async (actor1CountryCode: string, actor2CountryCode: string) => {
-    const { data, error } = await supabase
-        .from("gdelt_daily")
-        .select("*")
-        .eq("Actor1CountryCode", actor1CountryCode)
-        .eq("Actor2CountryCode", actor2CountryCode)
-        .order("Year", { ascending: false })
-        .order("Month", { ascending: false })
-        .order("Day", { ascending: false })
-        .limit(5);
-    if (error) {
-        throw new Error(error.message);
-    }
-    return data;
-}
-
-const getOneMonthRecords = async (actor1CountryCode: string, actor2CountryCode: string) => {
-    const { data, error } = await supabase
-        .from("gdelt_daily")
-        .select("*")
-        .eq("Actor1CountryCode", actor1CountryCode)
-        .eq("Actor2CountryCode", actor2CountryCode)
-        .order("Year", { ascending: false })
-        .order("Month", { ascending: false })
-        .order("Day", { ascending: false })
-        .limit(30);
-    if (error) {
-        throw new Error(error.message);
-    }
-    return data;
-}
-
-const getThreeMonthRecords = async (actor1CountryCode: string, actor2CountryCode: string) => {
-    const { data, error } = await supabase
-        .from("gdelt_daily")
-        .select("*")
-        .eq("Actor1CountryCode", actor1CountryCode)
-        .eq("Actor2CountryCode", actor2CountryCode)
-        .order("Year", { ascending: false })
-        .order("Month", { ascending: false })
-        .order("Day", { ascending: false })
-        .limit(90);
-    if (error) {
-        throw new Error(error.message);
-    }
-    return data;
-}
-
-const getOneYearRecords = async (actor1CountryCode: string, actor2CountryCode: string) => {
-    const { data, error } = await supabase
-        .from("gdelt_daily")
-        .select("*")
-        .eq("Actor1CountryCode", actor1CountryCode)
-        .eq("Actor2CountryCode", actor2CountryCode)
-        .order("Year", { ascending: false })
-        .order("Month", { ascending: false })
-        .order("Day", { ascending: false })
-        .limit(365);
-    if (error) {
-        throw new Error(error.message);
-    }
-    return data;
-}
-
-const getFiveYearRecords = async (actor1CountryCode: string, actor2CountryCode: string) => {
-    const { data, error } = await supabase
-        .from("gdelt_daily")
-        .select("*")
-        .eq("Actor1CountryCode", actor1CountryCode)
-        .eq("Actor2CountryCode", actor2CountryCode)
-        .order("Year", { ascending: false })
-        .order("Month", { ascending: false })
-        .order("Day", { ascending: false })
-        .limit(1825);
-    if (error) {
-        throw new Error(error.message);
-    }
-    return data;
-}
-
-const getMaxRecords = async (actor1CountryCode: string, actor2CountryCode: string) => {
-    const { data, error } = await supabase
-        .from("gdelt_daily")
-        .select("*")
-        .eq("Actor1CountryCode", actor1CountryCode)
-        .eq("Actor2CountryCode", actor2CountryCode)
-        .order("Year", { ascending: false })
-        .order("Month", { ascending: false })
-        .order("Day", { ascending: false });
-    if (error) {
-        throw new Error(error.message);
-    }
-    return data;
-}
-

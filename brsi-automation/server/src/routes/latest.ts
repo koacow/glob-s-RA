@@ -3,6 +3,6 @@ import { getLatestRecords } from '../controllers/latest';
 
 const router = Router();
 
-router.get('/', getLatestRecords);
+router.get('/:aggregateLevel', getLatestRecords);
 
 export default router;

@@ -13,6 +13,7 @@ app.listen(config.port, () => {
 
 // Run the GDELT data pull every day at 00:00 EST
 const dailyGDELTPull = cron.schedule('0 0 * * *', () => {
+    return;
     runJob();
     console.log('GDELT data pull job executed.');
 }, cronConfig);

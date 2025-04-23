@@ -1,5 +1,5 @@
 import { BigQuery } from '@google-cloud/bigquery';
-import { Database } from '../models/supabase';
+import { Database } from '../models/database.supabase';
 import supabase from '../config/supabase';
 
 type GDELTRowUpdate = Database['public']['Tables']['gdelt_daily']['Insert']

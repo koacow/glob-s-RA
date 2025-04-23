@@ -69,7 +69,63 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      getbrsirecordsaggregatedbyday: {
+        Args: {
+          actor_1_country_code: string
+          actor_2_country_code: string
+          start_day: number
+          start_month: number
+          start_year: number
+          end_day: number
+          end_month: number
+          end_year: number
+        }
+        Returns: {
+          actor1countrycode: string
+          actor2countrycode: string
+          year: number
+          month: number
+          day: number
+          avggoldsteinscale: number
+        }[]
+      }
+      getbrsirecordsaggregatedbymonth: {
+        Args: {
+          actor_1_country_code: string
+          actor_2_country_code: string
+          start_day: number
+          start_month: number
+          start_year: number
+          end_day: number
+          end_month: number
+          end_year: number
+        }
+        Returns: {
+          actor1countrycode: string
+          actor2countrycode: string
+          year: number
+          month: number
+          avggoldsteinscale: number
+        }[]
+      }
+      getbrsirecordsaggregatedbyyear: {
+        Args: {
+          actor_1_country_code: string
+          actor_2_country_code: string
+          start_day: number
+          start_month: number
+          start_year: number
+          end_day: number
+          end_month: number
+          end_year: number
+        }
+        Returns: {
+          actor1countrycode: string
+          actor2countrycode: string
+          year: number
+          avggoldsteinscale: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
