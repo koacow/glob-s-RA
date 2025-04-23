@@ -1,13 +1,13 @@
 import { Database } from "./database.supabase";
 
-export interface BRSILatestQueryParams {
+export interface BRSIQueryParams {
     actor1CountryCode: string | null;
     actor2CountryCode: string | null;
     startDate: string | null;
     endDate: string | null;
 }
 
-export interface BRSILatestResponse {
+export interface BRSIResponse {
     actor1CountryCode: string;
     actor2CountryCode: string;
     startDate: string;

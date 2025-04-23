@@ -1,36 +1,42 @@
 import supabase from "../config/supabase";
 import { Database } from "../models/database.supabase";
-import { BRSILatestQueryParams, BRSILatestResponse } from "../models/brsiLatest";
+import { BRSIQueryParams, BRSIResponse } from "../models/brsi";
 import { Request, Response, NextFunction } from "express";
 
 
 const aggregateLevels = ["daily", "monthly", "yearly"];
 
-export const getLatestRecords = async (req: Request, res: Response, next: NextFunction) => {
+export const getBRSIRecords = async (req: Request, res: Response, next: NextFunction) => {
     try {
         // TODO: Validate the request parameters in a middleware
         const { aggregateLevel } = req.params;
         if (!aggregateLevel || !aggregateLevels.includes(aggregateLevel)) {
-            res.status(400).json({ error: "Invalid aggregate level" });
+            res.status(400).json({ error: "Invalid aggregate level. Accepted values: daily, monthly, yearly" });
             return;
         }
-        const { actor1CountryCode, actor2CountryCode, startDate, endDate } = req.query as unknown as BRSILatestQueryParams;
+        const { actor1CountryCode, actor2CountryCode, startDate, endDate } = req.query as unknown as BRSIQueryParams;
 
         if (!actor1CountryCode || !actor2CountryCode || !startDate || !endDate) {
-            res.status(400).json({ error: "Missing required parameters" });
+            res.status(400).json({ error: "Missing required parameters: actor1CountryCode, actor2CountryCode, startDate, endDate" });
+            return;
+        }
+
+        if (actor1CountryCode.length !== 3 || actor2CountryCode.length !== 3) {
+            res.status(400).json({ error: "Country codes must be 3 characters long" });
+            return;
+        }
+
+        const dateRegex = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/;
+        if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
+            res.status(400).json({ error: "Invalid date format. Accepted format: YYYY-MM-DD" });
             return;
         }
 
         const startDateObj = new Date(startDate);
         const endDateObj = new Date(endDate);
 
-        if (startDateObj.toDateString() === "Invalid Date" || endDateObj.toDateString() === "Invalid Date") {
-            res.status(400).json({ error: "Invalid date format" });
-            return;
-        }
-        
         if (startDateObj > endDateObj) {
-            res.status(400).json({ error: "Start date cannot be after end date" });
+            res.status(400).json({ error: "Invalid date range. Start date must be before end date" });
             return;
         }
 
@@ -42,7 +48,7 @@ export const getLatestRecords = async (req: Request, res: Response, next: NextFu
             aggregateLevel,
             numRecords: 0,
             records: []
-        } as BRSILatestResponse;
+        } as BRSIResponse;
         switch (aggregateLevel) {
             case "daily":
                 const { data: dailyData, error: dailyDataFetchError } = await supabase.rpc("getbrsirecordsaggregatedbyday", {
@@ -103,8 +109,6 @@ export const getLatestRecords = async (req: Request, res: Response, next: NextFu
                 res.status(400).json({ error: "Invalid aggregate level" });
                 return;
         }
-        res.status(200).json(response);
-        return;
     } catch (error) {
         next(error);
     }

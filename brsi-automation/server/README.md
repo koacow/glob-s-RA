@@ -52,21 +52,26 @@ This will start the server in development mode. The server will listen on the po
 
 ### Using the API
 
-**NOTE:** The API route is intended for internal use only as it is not secured.
-The server exposes a REST API at the `/api/brsi` endpoint. You can use this endpoint to query the BRSI data stored in the Supabase database.
+**NOTE:** The API route is intended for internal use only as it is insecure.
+The server exposes a REST API at the `/api/brsi/:aggregateLevel` endpoint. You can use this endpoint to query the BRSI data stored in the Supabase database.
+
+The API supports the following aggregate levels in the URL:
+
+- `daily`: Daily data
+- `monthly`: Monthly data
+- `yearly`: Yearly data
+
 The API supports the following query parameters:
 
-- `start_year`: The start year for the query in YYYY format.
-- `start_month`: The start month for the query in MM format.
-- `end_year`: The end year for the query in YYYY format.
-- `end_month`: The end month for the query in MM format.
+- `startDate`: The desired start date for records in YYYY-MM-DD format.
+- `endDate`: The desired end date for records in YYYY-MM-DD format.
 - `actor1CountryCode`: The country code of the actor 1 - the country whose perspective of which the sentiment is being measured.
 - `actor2CountryCode`: The country code of the actor 2 - the opposing country whose perspective towards which the sentiment is being measured.
 
 Example API request:
 
 ```bash
-curl -X GET http://localhost:4000/api/brsi?actor1CountryCode=USA&actor2CountryCode=CHN&startYear=1995&startMonth=1&endYear=2025&endMonth=3
+curl -X GET http://localhost:4000/api/brsi/daily?startDate=2023-01-01&endDate=2023-12-31&actor1CountryCode=USA&actor2CountryCode=CHN
 ```
 
 ## Future TODOs
@@ -78,4 +83,4 @@ curl -X GET http://localhost:4000/api/brsi?actor1CountryCode=USA&actor2CountryCo
 - Add more API endpoints for different queries.
 - Aggregate data by day instead of month to increase granularity.
 - Use WebSockets to push data to the client in real-time.
-- Add a frontend to visualize the data.
+- Add a frontend to visualize the data. 
