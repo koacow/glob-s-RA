@@ -74,6 +74,16 @@ Example API request:
 curl -X GET http://localhost:4000/api/brsi/daily?startDate=2023-01-01&endDate=2023-12-31&actor1CountryCode=USA&actor2CountryCode=CHN
 ```
 
+## Cron Job
+
+The server uses the `node-cron` library to schedule a cron job that runs daily at 00:00 America/New_York time. The cron job fetches BRSI data for the preceding day from the GDELT Events 1.0 Database and upserts it into the Supabase PostgreSQL database.
+
+## Database
+
+The server uses a Supabase PostgreSQL database to store the BRSI data. The database schema is defined in the `db/schema.sql` file. The schema includes the following tables:
+
+- `gdelt_daily`: Stores daily BRSI data pulled from GDELT. Contains data from January 1, 1995 to the present day.
+
 ## Future TODOs
 
 - **Migrate to Go or Java**: The current implementation is in Node.js, but we plan to migrate to Go or Java for better performance and scalability.

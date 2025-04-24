@@ -57,9 +57,23 @@ def fetch_gdelt_data_for_year_and_month(year, month):
     FROM 
         DailyAverages
     '''
-    rows = client.query_and_wait(query)
-    rows = rows.to_dataframe()
-    rows = rows.to_dict(orient="records")
+    try:
+        rows = client.query_and_wait(query)
+    except Exception as e:
+        print(f"Error fetching data for {year}-{month:02d}: {e}")
+        raise
+    
+    try:
+        rows = rows.to_dataframe()
+        sizeBefore = rows.shape[0]
+        rows.dropna(inplace=True)
+        sizeAfter = rows.shape[0]
+        print(f"Removed {sizeBefore - sizeAfter} rows with NaN values.")
+        rows = rows.to_dict(orient="records")
+    except Exception as e:
+        print(f"Error converting rows to DataFrame: {e} for {year}-{month:02d}")
+        raise
+
     print("Fetched %d rows for year %d.", len(rows), year)
     return rows
     
@@ -74,9 +88,10 @@ def upload_to_supabase(rows):
     supabase.table("gdelt_daily").insert(rows).execute()
     print("Data upload completed.")
 
+
 if __name__ == "__main__":
     # Database currently contains data up to December 2012.
-    startYear = 2013
+    startYear = 2012
     endYear = 2026
     print(f"Fetching and uploading GDELT data from {startYear} to {endYear - 1}...")
     for year in range(startYear + 1, endYear):
@@ -86,6 +101,6 @@ if __name__ == "__main__":
                 upload_to_supabase(rows)
             except Exception as e:
                 print(f"Error processing year {year} month {month}: {e}, aborting.")
-                break
+
     print("Done.")
 
