@@ -13,6 +13,8 @@ import {
     SelectChangeEvent,
     Container
 } from '@mui/material';
+import dayjs from 'dayjs';
+import { PickerValue } from '@mui/x-date-pickers/internals';
 
 type DisplayOptionsFormProps = {
     options: DataOptions;
@@ -28,12 +30,18 @@ export default function DisplayOptionsForm({ options, setOptions }: DisplayOptio
         setOptions({ ...options, actor2CountryCode: event.target.value });
     };
 
-    const handleStartDateChange = (date: any) => {
-        setOptions({ ...options, startDate: date.format('YYYY-MM-DD') });
+    const handleStartDateChange = (date: PickerValue) => {
+        if (!date) {
+            return;
+        }
+        setOptions({ ...options, startDate: date });
     };
 
-    const handleEndDateChange = (date: any) => {
-        setOptions({ ...options, endDate: date.format('YYYY-MM-DD') });
+    const handleEndDateChange = (date: PickerValue) => {
+        if (!date) {
+            return;
+        }
+        setOptions({ ...options, endDate: date });
     };
 
     const handleAggregateLevelChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,16 +77,20 @@ export default function DisplayOptionsForm({ options, setOptions }: DisplayOptio
                     label="Start Date"
                     value={options.startDate}
                     onChange={handleStartDateChange}
+                    minDate={dayjs('1995-01-01')}
+                    maxDate={options.endDate}
                 />
                 <DatePicker
                     label="End Date"
                     value={options.endDate}
                     onChange={handleEndDateChange}
+                    minDate={dayjs('1995-01-01').add(3, 'day')}
+                    maxDate={dayjs()}
                 />
             </LocalizationProvider>
 
             <FormControl component="fieldset">
-                <FormLabel component="legend">Aggregate Level</FormLabel>
+                <FormLabel component="legend">Aggregation Level</FormLabel>
                 <RadioGroup
                     row
                     value={options.aggregateLevel}

@@ -14,5 +14,30 @@ export interface BRSIResponse {
     endDate: string;
     aggregateLevel: 'daily' | 'monthly' | 'yearly';
     numRecords: number;
-    records: Database["public"]["Functions"]["getbrsirecordsaggregatedbyday"]["Returns"] | Database["public"]["Functions"]["getbrsirecordsaggregatedbymonth"]["Returns"] | Database["public"]["Functions"]["getbrsirecordsaggregatedbyyear"]["Returns"];
+    records: {
+        actor1CountryCode: string;
+        actor2CountryCode: string;
+        year: number;
+        month?: number;
+        day?: number;
+        avgGoldsteinScale: number;
+    }[];
+}
+
+export interface BRSIData {
+    actor1CountryCode: string;
+    actor2CountryCode: string;
+    startDate: string;
+    endDate: string;
+    aggregateLevel: 'daily' | 'monthly' | 'yearly';
+    numRecords: number;
+    records: {
+        actor1CountryCode: string;
+        actor2CountryCode: string;
+        date: Date;
+        avgGoldsteinScale: number;
+        day?: number;
+        month?: number;
+        year: number;
+    }[];
 }

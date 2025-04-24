@@ -6,8 +6,11 @@ import fetchBRSI from '../utils/fetchBRSI';
 import dayjs from 'dayjs';
 import { 
   Container, 
+  Button,
+  Typography,
 } from '@mui/material';
 import './App.css'
+import BRSIChart from './components/BRSIChart';
 
 
 function App() {
@@ -23,7 +26,7 @@ function App() {
   const brsiQuery = useQuery({
     queryKey: ['brsi'],
     queryFn: () => fetchBRSI(displayOptions),
-    enabled: !!displayOptions.actor1CountryCode && !!displayOptions.actor2CountryCode,
+    enabled: false,
   });
 
   return (
@@ -31,6 +34,21 @@ function App() {
       <DisplayOptionsForm
         options={displayOptions}
         setOptions={setDisplayOptions}
+      />
+      <Button
+        variant="contained"
+        onClick={() => {
+          brsiQuery.refetch();
+        }}
+      >
+        <Typography variant="h6">Fetch BRSI Data</Typography>
+      </Button>
+      <BRSIChart
+        data={brsiQuery.data}
+        isLoading={brsiQuery.isLoading}
+        isError={brsiQuery.isError}
+        error={brsiQuery.error}
+        refetch={brsiQuery.refetch}
       />
     </Container>
   )
