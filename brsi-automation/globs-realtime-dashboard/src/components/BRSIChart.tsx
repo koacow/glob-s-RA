@@ -1,4 +1,4 @@
-import { LineChart, ChartContainer } from '@mui/x-charts'
+import { LineChart } from '@mui/x-charts'
 import { BRSIResponse, BRSIData } from '../types/brsi'
 import { Container, Typography } from '@mui/material'
 
@@ -37,15 +37,10 @@ const parseData: (data: BRSIResponse) => BRSIData = (data) => {
 const BRSIChart: React.FC<BRSIChartProps> = ({
     data,
     isLoading,
-    isError,
-    error,
-    refetch
 }) => {
     if (!data) {
         return (
-            <Container>
-                <Typography variant="h6">No data available</Typography>
-            </Container>
+            <Typography fontFamily={"Cardo, serif"} variant="h6">No data available</Typography>
         )
     }
     return (
@@ -97,7 +92,6 @@ const BRSIChart: React.FC<BRSIChartProps> = ({
                 dataset={parseData(data).records}
                 slots={{
                     loadingOverlay: () => <Typography variant="h6">Loading...</Typography>,
-                    
                 }}
             />
         </>

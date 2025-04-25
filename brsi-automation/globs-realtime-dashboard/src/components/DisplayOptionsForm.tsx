@@ -2,6 +2,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DataOptions } from '../types/DataOptions';
+import countries from '../assets/countries.json';
 import { 
     Radio, 
     RadioGroup,
@@ -11,17 +12,25 @@ import {
     FormControlLabel,
     FormLabel,
     SelectChangeEvent,
-    Container
+    Container,
+    Button,
+    IconButton,
+    Typography
 } from '@mui/material';
+import { SwapVert } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { PickerValue } from '@mui/x-date-pickers/internals';
 
 type DisplayOptionsFormProps = {
     options: DataOptions;
     setOptions: (options: DataOptions) => void;
+    refetch: () => void;
+    loading: boolean;
+    error: boolean;
+    errorMessage: string | undefined;
 };
 
-export default function DisplayOptionsForm({ options, setOptions }: DisplayOptionsFormProps) {
+export default function DisplayOptionsForm({ options, setOptions, refetch, loading, error, errorMessage }: DisplayOptionsFormProps) {
     const handleActor1Change = (event: SelectChangeEvent<string>) => {
         setOptions({ ...options, actor1CountryCode: event.target.value });
     };
@@ -49,26 +58,47 @@ export default function DisplayOptionsForm({ options, setOptions }: DisplayOptio
     };
 
     return (
-        <Container>
-            <FormControl fullWidth>
+        <Container
+            className="grid grid-cols-2 gap-4 p-4"
+        >
+            <FormControl fullWidth className='col-span-2'>
                 <FormLabel>Actor 1 Country Code</FormLabel>
                 <Select
                     value={options.actor1CountryCode}
                     onChange={handleActor1Change}
                 >
-                    <MenuItem value="USA">USA</MenuItem>
-                    <MenuItem value="CHN">CHN</MenuItem>
+                    {countries.map((country) => (
+                        <MenuItem key={country.country_code} value={country.country_code}>
+                            {country.country_code}
+                        </MenuItem>
+                    ))}
                 </Select>
             </FormControl>
 
-            <FormControl fullWidth>
+            <IconButton
+                onClick={() => {
+                    setOptions({
+                        ...options,
+                        actor1CountryCode: options.actor2CountryCode,
+                        actor2CountryCode: options.actor1CountryCode,
+                    });
+                }}
+                className="w-fit h-fit col-start-1 col-span-2"
+            >
+                <SwapVert />
+            </IconButton>
+
+            <FormControl fullWidth className="col-span-2">
                 <FormLabel>Actor 2 Country Code</FormLabel>
                 <Select
                     value={options.actor2CountryCode}
                     onChange={handleActor2Change}
                 >
-                    <MenuItem value="USA">USA</MenuItem>
-                    <MenuItem value="CHN">CHN</MenuItem>
+                    {countries.map((country) => (
+                        <MenuItem key={country.country_code} value={country.country_code}>
+                            {country.country_code}
+                        </MenuItem>
+                    ))}
                 </Select>
             </FormControl>
 
@@ -89,7 +119,7 @@ export default function DisplayOptionsForm({ options, setOptions }: DisplayOptio
                 />
             </LocalizationProvider>
 
-            <FormControl component="fieldset">
+            <FormControl component="fieldset" className='col-span-2'>
                 <FormLabel component="legend">Aggregation Level</FormLabel>
                 <RadioGroup
                     row
@@ -101,6 +131,24 @@ export default function DisplayOptionsForm({ options, setOptions }: DisplayOptio
                     <FormControlLabel value="yearly" control={<Radio />} label="Yearly" />
                 </RadioGroup>
             </FormControl>
+            <Button 
+                variant='contained' 
+                onClick={() => {
+                refetch();
+                }}
+                disabled={options.startDate.isAfter(options.endDate) || options.startDate.isSame(options.endDate) || loading}
+                className="col-span-2 w-fit"
+            >
+                Fetch Data
+            </Button>
+            {
+                error && (
+                    <Typography variant="body2" color="error">
+                        An error occurred while fetching data:
+                        {errorMessage}
+                    </Typography>
+                )
+            }
         </Container>
     );
 }

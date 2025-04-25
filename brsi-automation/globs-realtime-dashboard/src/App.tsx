@@ -1,55 +1,56 @@
 import React, { useState } from 'react';
-import { DataOptions } from './types/DataOptions';
-import DisplayOptionsForm from './components/DisplayOptionsForm';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import fetchBRSI from '../utils/fetchBRSI';
-import dayjs from 'dayjs';
+import ChartGroup from './components/ChartGroup';
 import { 
   Container, 
   Button,
   Typography,
 } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import './App.css'
-import BRSIChart from './components/BRSIChart';
+
 
 
 function App() {
-  const [ displayOptions, setDisplayOptions ] = useState<DataOptions>({
-    actor1CountryCode: 'USA',
-    actor2CountryCode: 'CHN',
-    startDate: dayjs('2024-01-01'),
-    endDate: dayjs(),
-    aggregateLevel: 'daily'
-  });
-
-  const queryClient = useQueryClient();
-  const brsiQuery = useQuery({
-    queryKey: ['brsi'],
-    queryFn: () => fetchBRSI(displayOptions),
-    enabled: false,
-  });
-
+  const [ chartGroups, setChartGroups ] = useState<number[]>([0]);
+  const handleAddChartGroup = () => {
+    setChartGroups((prev) => [...prev, prev.length]);
+  }
+  const handleRemoveChartGroup = (index: number) => {
+    setChartGroups((prev) => prev.filter((_, i) => i !== index));
+  }
   return (
-    <Container>
-      <DisplayOptionsForm
-        options={displayOptions}
-        setOptions={setDisplayOptions}
-      />
+    <Container
+      className="my-10"
+    >
+      <Typography
+        variant="h4"
+        className="text-center my-4 font-bold"
+        fontFamily={'Cardo, serif'}
+      >
+        Global Bilateral Sentiment Explorer
+      </Typography>
+      <Typography
+        variant="subtitle1"
+        className="text-center mb-8"
+      >
+        Visualize sentiment trends between countries over time
+      </Typography>
+      {chartGroups.map((_, index) => (
+        <ChartGroup
+          removeChartGroup={handleRemoveChartGroup}
+          key={index}
+          index={index}
+        />
+      ))}
       <Button
         variant="contained"
-        onClick={() => {
-          brsiQuery.refetch();
-        }}
+        color="primary"
+        onClick={handleAddChartGroup}
+        className="mb-8"
+        startIcon={<Add />}
       >
-        <Typography variant="h6">Fetch BRSI Data</Typography>
+        Add Chart
       </Button>
-      <BRSIChart
-        data={brsiQuery.data}
-        isLoading={brsiQuery.isLoading}
-        isError={brsiQuery.isError}
-        error={brsiQuery.error}
-        refetch={brsiQuery.refetch}
-      />
     </Container>
   )
 }
