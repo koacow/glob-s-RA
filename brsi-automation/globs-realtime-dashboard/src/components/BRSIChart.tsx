@@ -38,18 +38,13 @@ const BRSIChart: React.FC<BRSIChartProps> = ({
     data,
     isLoading,
 }) => {
-    if (!data) {
-        return (
-            <Typography fontFamily={"Cardo, serif"} variant="h6">No data available</Typography>
-        )
-    }
     return (
         <>
             <Typography 
                 variant="h6"
                 className="text-center"
             >
-                {`${data.aggregateLevel.charAt(0).toUpperCase() + data.aggregateLevel.slice(1)} average sentiment of ${data.actor1CountryCode} towards ${data.actor2CountryCode}`}
+                {data && `${data.aggregateLevel.charAt(0).toUpperCase() + data.aggregateLevel.slice(1)} average sentiment of ${data.actor1CountryCode} towards ${data.actor2CountryCode}`}
             </Typography>
             <LineChart
                 loading={isLoading}
@@ -59,10 +54,14 @@ const BRSIChart: React.FC<BRSIChartProps> = ({
                     vertical: true,
                     horizontal: true,
                 }}
+                hideLegend={!data || data.numRecords === 0 || isLoading}
                 xAxis={[
                     {
                         dataKey: 'date',
                         valueFormatter: (value) => {
+                            if (!data) {
+                                return '';
+                            }
                             if (data.aggregateLevel === 'daily') {
                                 return new Date(value).toLocaleDateString('en-US', {
                                     month: 'short',
@@ -89,9 +88,10 @@ const BRSIChart: React.FC<BRSIChartProps> = ({
                         curve: 'linear',    
                     }
                 ]}
-                dataset={parseData(data).records}
+                dataset={data ? parseData(data).records : []}
                 slots={{
-                    loadingOverlay: () => <Typography variant="h6">Loading...</Typography>,
+                    loadingOverlay: () => <Typography fontFamily={"Cardo, serif"} variant="h6">Loading...</Typography>,
+                    noDataOverlay: () => <Typography fontFamily={"Cardo, serif"} variant="h6">No data available</Typography>,
                 }}
             />
         </>
