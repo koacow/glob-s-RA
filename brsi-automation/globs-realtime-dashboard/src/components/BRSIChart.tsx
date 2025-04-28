@@ -77,8 +77,8 @@ const BRSIChart: React.FC<BRSIChartProps> = ({
                             return new Date(value).toLocaleDateString('en-US', {
                                 year: 'numeric',
                             });
-                        }
-                        
+                        },
+                        scaleType: 'utc',
                     }
                 ]}
                 series={[
@@ -89,10 +89,6 @@ const BRSIChart: React.FC<BRSIChartProps> = ({
                     }
                 ]}
                 dataset={data ? parseData(data).records : []}
-                slots={{
-                    loadingOverlay: () => <Typography fontFamily={"Cardo, serif"} variant="h6">Loading...</Typography>,
-                    noDataOverlay: () => <Typography fontFamily={"Cardo, serif"} variant="h6">No data available</Typography>,
-                }}
             />
         </>
     )

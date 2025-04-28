@@ -30,11 +30,20 @@ function ChartGroup({ index, removeChartGroup }: ChartGroupProps) {
     queryKey: [`brsi-${index}`],
     queryFn: () => fetchBRSI(displayOptions),
     enabled: false,
+    initialData: {
+      actor1CountryCode: displayOptions.actor1CountryCode,
+      actor2CountryCode: displayOptions.actor2CountryCode,
+      startDate: displayOptions.startDate.format('YYYY-MM-DD'),
+      endDate: displayOptions.endDate.format('YYYY-MM-DD'),
+      aggregateLevel: displayOptions.aggregateLevel,
+      numRecords: 0,
+      records: [],
+    }
   })
 
   return (
     <Container
-      className="w-fit flex flex-col items-center justify-center"
+      className="w-fit h-min flex flex-col items-center justify-center"
     >
         <DisplayOptionsForm
             options={displayOptions}
