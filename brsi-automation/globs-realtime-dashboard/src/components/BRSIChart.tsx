@@ -44,7 +44,7 @@ const BRSIChart: React.FC<BRSIChartProps> = ({
                 variant="h6"
                 className="text-center"
             >
-                {data && `${data.aggregateLevel.charAt(0).toUpperCase() + data.aggregateLevel.slice(1)} average sentiment of local news report in ${data.actor1CountryCode} towards ${data.actor2CountryCode}`}
+                {data && `${data.aggregateLevel.charAt(0).toUpperCase() + data.aggregateLevel.slice(1)} average BRSI of ${data.actor1CountryCode} towards ${data.actor2CountryCode}`}
             </Typography>
             <LineChart
                 loading={loading}

@@ -30,6 +30,8 @@ type DisplayOptionsFormProps = {
     errorMessage: string | undefined;
 };
 
+const sortedCountries = countries.sort((a, b) => a.country_name.localeCompare(b.country_name));
+
 export default function DisplayOptionsForm({ options, setOptions, refetch, loading, error, errorMessage }: DisplayOptionsFormProps) {
     const handleActor1Change = (event: SelectChangeEvent<string>) => {
         setOptions({ ...options, actor1CountryCode: event.target.value });
@@ -67,9 +69,9 @@ export default function DisplayOptionsForm({ options, setOptions, refetch, loadi
                     value={options.actor1CountryCode}
                     onChange={handleActor1Change}
                 >
-                    {countries.map((country) => (
+                    {sortedCountries.map((country) => (
                         <MenuItem key={country.country_code} value={country.country_code}>
-                            {country.country_code}
+                            {`${country.country_name} (${country.country_code})`}
                         </MenuItem>
                     ))}
                 </Select>
@@ -94,9 +96,9 @@ export default function DisplayOptionsForm({ options, setOptions, refetch, loadi
                     value={options.actor2CountryCode}
                     onChange={handleActor2Change}
                 >
-                    {countries.map((country) => (
+                    {sortedCountries.map((country) => (
                         <MenuItem key={country.country_code} value={country.country_code}>
-                            {country.country_code}
+                            {`${country.country_name} (${country.country_code})`}
                         </MenuItem>
                     ))}
                 </Select>
