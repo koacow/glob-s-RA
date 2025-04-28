@@ -1,6 +1,6 @@
 import { LineChart } from '@mui/x-charts'
 import { BRSIResponse, BRSIData } from '../types/brsi'
-import { Container, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 
 export type BRSIChartProps = {
     data: BRSIResponse | undefined

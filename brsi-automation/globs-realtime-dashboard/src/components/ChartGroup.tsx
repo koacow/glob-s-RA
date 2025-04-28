@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { DataOptions } from '../types/DataOptions';
 import DisplayOptionsForm from '../components/DisplayOptionsForm';
 import { useQuery } from '@tanstack/react-query';
-import fetchBRSI from '../../utils/fetchBRSI';
+import fetchBRSI from "../utils/fetchBRSI";
 import dayjs from 'dayjs';
 import { Delete } from '@mui/icons-material';
 import { 

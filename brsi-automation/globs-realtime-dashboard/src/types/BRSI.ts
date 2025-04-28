@@ -1,5 +1,3 @@
-import { Database } from "./database.supabase";
-
 export interface BRSIQueryParams {
     actor1CountryCode: string | null;
     actor2CountryCode: string | null;

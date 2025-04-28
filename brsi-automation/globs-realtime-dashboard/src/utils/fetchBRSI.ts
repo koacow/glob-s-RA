@@ -1,8 +1,8 @@
 import axios from 'axios';
 import config from '../config/config';
 
-import { BRSIResponse } from '../src/types/brsi';
-import { DataOptions } from '../src/types/DataOptions';
+import { BRSIResponse } from '../types/brsi';
+import { DataOptions } from '../types/DataOptions';
 
 
 const fetchBRSI:(options: DataOptions) => Promise<BRSIResponse> = async (options) => {
