@@ -26,11 +26,11 @@ function ChartGroup({ index, removeChartGroup }: ChartGroupProps) {
     aggregateLevel: 'daily'
   });
 
-  const brsiQuery = useQuery({
+  const { refetch, isLoading, isRefetching, isError, error, data } = useQuery({
     queryKey: [`brsi-${index}`],
     queryFn: () => fetchBRSI(displayOptions),
     enabled: false,
-  });
+  })
 
   return (
     <Container
@@ -39,10 +39,10 @@ function ChartGroup({ index, removeChartGroup }: ChartGroupProps) {
         <DisplayOptionsForm
             options={displayOptions}
             setOptions={setDisplayOptions}
-            refetch={brsiQuery.refetch}
-            loading={brsiQuery.isLoading}
-            error={brsiQuery.isError}
-            errorMessage={brsiQuery.error?.message}
+            refetch={refetch}
+            loading={isLoading || isRefetching}
+            error={isError}
+            errorMessage={error?.message}
         />
         <Button
             onClick={() => removeChartGroup(index)}
@@ -53,11 +53,11 @@ function ChartGroup({ index, removeChartGroup }: ChartGroupProps) {
             Remove Chart
         </Button>
         <BRSIChart
-            data={brsiQuery.data}
-            isLoading={brsiQuery.isLoading}
-            isError={brsiQuery.isError}
-            error={brsiQuery.error}
-            refetch={brsiQuery.refetch}
+            data={data}
+            loading={isLoading || isRefetching}
+            isError={isError}
+            error={error}
+            refetch={refetch}
         />
     </Container>
   )

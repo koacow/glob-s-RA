@@ -136,7 +136,7 @@ export default function DisplayOptionsForm({ options, setOptions, refetch, loadi
                 onClick={() => {
                 refetch();
                 }}
-                disabled={options.startDate.isAfter(options.endDate) || options.startDate.isSame(options.endDate) || loading}
+                disabled={loading || options.startDate.isAfter(options.endDate) || options.startDate.isSame(options.endDate)}
                 className="col-span-2 w-fit"
             >
                 Fetch Data

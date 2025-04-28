@@ -4,7 +4,7 @@ import { Typography } from '@mui/material'
 
 export type BRSIChartProps = {
     data: BRSIResponse | undefined
-    isLoading: boolean
+    loading: boolean
     isError: boolean
     error: unknown
     refetch: () => void
@@ -36,7 +36,7 @@ const parseData: (data: BRSIResponse) => BRSIData = (data) => {
 
 const BRSIChart: React.FC<BRSIChartProps> = ({
     data,
-    isLoading,
+    loading,
 }) => {
     return (
         <>
@@ -47,14 +47,14 @@ const BRSIChart: React.FC<BRSIChartProps> = ({
                 {data && `${data.aggregateLevel.charAt(0).toUpperCase() + data.aggregateLevel.slice(1)} average sentiment of ${data.actor1CountryCode} towards ${data.actor2CountryCode}`}
             </Typography>
             <LineChart
-                loading={isLoading}
+                loading={loading}
                 height={400}
                 width={800}
                 grid={{
                     vertical: true,
                     horizontal: true,
                 }}
-                hideLegend={!data || data.numRecords === 0 || isLoading}
+                hideLegend={!data || data.numRecords === 0 || loading}
                 xAxis={[
                     {
                         dataKey: 'date',
