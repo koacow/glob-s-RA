@@ -8,13 +8,13 @@ export default function Header() {
                 className="text-center my-4 font-bold"
                 fontFamily={'Cardo, serif'}
             >
-                Global Bilateral Sentiment Explorer
+                Global Bilateral Relations Sentiment Index Explorer
             </Typography>
             <Typography
                 variant="subtitle1"
                 className="text-center mb-8"
             >
-                Visualize sentiment trends between countries over time
+                The Bilateral Relations Sentiment Index (BRSI) is a media-based measure of public sentiment, capturing the tone of local news coverage in Country 1 regarding Country 2.
             </Typography>
         </>
     )
