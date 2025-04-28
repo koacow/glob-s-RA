@@ -15,9 +15,10 @@ import {
     Container,
     Button,
     IconButton,
-    Typography
+    Typography,
+    Tooltip,
 } from '@mui/material';
-import { SwapVert } from '@mui/icons-material';
+import { SwapVert, Info } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { PickerValue } from '@mui/x-date-pickers/internals';
 
@@ -64,10 +65,32 @@ export default function DisplayOptionsForm({ options, setOptions, refetch, loadi
             className="grid grid-cols-2 gap-4 p-4"
         >
             <FormControl fullWidth className='col-span-2'>
-                <FormLabel>Actor 1 Country Code</FormLabel>
+                <FormLabel className='flex items-center'>
+                    Actor 1 Country Code
+                    <Tooltip
+                        title="The ISO 3166-1 alpha-3 code for the entity/country from which the sentiment is being measured."
+                    >
+                        <Info fontSize="small" className="ml-1" />
+                    </Tooltip>
+                </FormLabel>
                 <Select
                     value={options.actor1CountryCode}
                     onChange={handleActor1Change}
+                    MenuProps={{
+                        PaperProps: {
+                            style: {
+                                maxHeight: 200, // Limit the height of the dropdown menu
+                            },
+                        },
+                        anchorOrigin: {
+                            vertical: 'bottom', // Ensure the menu appears below the button
+                            horizontal: 'left',
+                        },
+                        transformOrigin: {
+                            vertical: 'top',
+                            horizontal: 'left',
+                        },
+                    }}
                 >
                     {sortedCountries.map((country) => (
                         <MenuItem key={country.country_code} value={country.country_code}>
@@ -91,10 +114,32 @@ export default function DisplayOptionsForm({ options, setOptions, refetch, loadi
             </IconButton>
 
             <FormControl fullWidth className="col-span-2">
-                <FormLabel>Actor 2 Country Code</FormLabel>
+                <FormLabel className='flex items-center'>
+                    Actor 2 Country Code
+                    <Tooltip
+                        title="The ISO 3166-1 alpha-3 code for the entity/country towards which the sentiment is being measured."
+                    >
+                        <Info fontSize="small" className="ml-1" />
+                    </Tooltip>
+                </FormLabel>
                 <Select
                     value={options.actor2CountryCode}
                     onChange={handleActor2Change}
+                    MenuProps={{
+                        PaperProps: {
+                            style: {
+                                maxHeight: 200, // Limit the height of the dropdown menu
+                            },
+                        },
+                        anchorOrigin: {
+                            vertical: 'bottom', // Ensure the menu appears below the button
+                            horizontal: 'left',
+                        },
+                        transformOrigin: {
+                            vertical: 'top',
+                            horizontal: 'left',
+                        },
+                    }}
                 >
                     {sortedCountries.map((country) => (
                         <MenuItem key={country.country_code} value={country.country_code}>
@@ -122,7 +167,14 @@ export default function DisplayOptionsForm({ options, setOptions, refetch, loadi
             </LocalizationProvider>
 
             <FormControl component="fieldset" className='col-span-2'>
-                <FormLabel component="legend">Aggregation Level</FormLabel>
+                <FormLabel component="legend" className='flex items-center'>
+                    Aggregation Level
+                    <Tooltip
+                        title="Data will be averaged at this level over the selected time period."
+                    >
+                        <Info fontSize="small" className="ml-1" />
+                    </Tooltip>
+                </FormLabel>
                 <RadioGroup
                     row
                     value={options.aggregateLevel}
