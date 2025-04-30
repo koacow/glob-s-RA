@@ -782,5 +782,9 @@
   {
     "country_code": "ETH",
     "country_name": "Ethiopia"
+  },
+  {
+    "country_code": "WLD",
+    "country_name": "World"
   }
 ]

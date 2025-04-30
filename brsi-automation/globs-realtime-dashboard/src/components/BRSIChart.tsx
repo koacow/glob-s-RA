@@ -1,6 +1,7 @@
 import { LineChart } from '@mui/x-charts'
 import { BRSIResponse, BRSIData } from '../types/brsi'
 import { Typography } from '@mui/material'
+import { useMediaQuery, Theme } from '@mui/material'
 
 export type BRSIChartProps = {
     data: BRSIResponse | undefined
@@ -38,6 +39,11 @@ const BRSIChart: React.FC<BRSIChartProps> = ({
     data,
     loading,
 }) => {
+    const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'));
+    const isTablet = useMediaQuery((theme: Theme) => theme.breakpoints.between('sm', 'md'));
+    const chartHeight = isMobile ? 400 : isTablet ? 400 : 500;
+    const chartWidth = isMobile ? 400 : isTablet ? 600 : 800;
+
     return (
         <>
             <Typography 
@@ -48,8 +54,8 @@ const BRSIChart: React.FC<BRSIChartProps> = ({
             </Typography>
             <LineChart
                 loading={loading}
-                height={400}
-                width={800}
+                height={chartHeight}
+                width={chartWidth}
                 grid={{
                     vertical: true,
                     horizontal: true,
