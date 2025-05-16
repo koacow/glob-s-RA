@@ -1,0 +1,5 @@
+pandas
+unidecode
+requests
+python-dotenv
+folium
