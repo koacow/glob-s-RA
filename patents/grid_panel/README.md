@@ -47,7 +47,7 @@ All outputs are stored in the `data/` directory:
     - Number of rows: 13,555
 
 3. Grid-inventor panel in Parquet format (`grid_inventors_panel.parquet`)
-    - Each row represents a grid cell-year with the number of inventors that filed patents in that grid-year.
+    - Each row represents a grid cell-year with the number of inventors that filed patents in that grid-year - unique `inventor_ids` that filed patents within the grid cell and year.
     - Columns:
         - `grid_id`: Unique identifier for each grid cell
         - `year`: Year of the inventor count
@@ -64,3 +64,4 @@ All outputs are stored in the `data/` directory:
         - `count`: Number of disasters in that grid-year
         - `n_inventors`: Number of unique inventors in that grid-year
     - Number of rows: 370,512
+    - Note: the sum of `n_inventors` across all grid-years is greater than the total number of unique inventors (`inventor_ids`). This is expected as inventors can file multiple patents.
