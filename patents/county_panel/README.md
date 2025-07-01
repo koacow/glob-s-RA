@@ -49,6 +49,7 @@ All downloaded raw data files are stored in the `./data` directory. The followin
         - `2000 Census SF1a - 100% Data [Areas Larger than Block Groups]`
         - `2010 Census SF1a - P & H Tables [Blocks & Larger Areas]`
         - `2020 Census PL 94-171 Redistricting Data Summary File`
+        - `1980, 1990, 2000 Education Census Data`
     - Availability: all counties. 1980, 1990, 2000, 2010, 2020.
     - Merged dataset: `./data/NHGIS_RACE_BY_COUNTY_1980_2020/sf1_1980_2020.csv`
     - Note: each table is a separate CSV file. Then, all tables are concatenated into a single CSV file.
