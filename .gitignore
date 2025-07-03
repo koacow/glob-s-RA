@@ -7,3 +7,9 @@ node_modules
 *.tsv
 *.zip
 *.parquet
+*.shp
+*.cpg
+*.dbf
+*.prj
+*.xml
+*.shx
