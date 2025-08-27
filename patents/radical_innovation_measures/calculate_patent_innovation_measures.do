@@ -1,0 +1,440 @@
+/*==============================================================================
+ * PATENT INNOVATION MEASURES CALCULATION
+ * 
+ * This do-file calculates three patent innovation measures:
+ * 1. Atypicality Score - based on CPC subclass pair combinations
+ * 2. Technological Leap Score - based on Jaccard similarity with cited patents
+ * 3. Forward Citation Impact Score - based on entropy of forward citations
+ *
+ * Data Requirements:
+ * - final_fwdcitation.csv: patent_id, forward_citations
+ * - g_cpc_current.tsv: patent_id, cpc_sequence, cpc_subclass, cpc_group
+ * - g_us_patent_citation.tsv: patent_id, citation_sequence, citation_patent_id
+ *
+ * Author: Generated from Jupyter notebook analysis
+ * Date: August 19, 2025
+ *==============================================================================*/
+
+clear all
+set more off
+capture log close
+log using "patent_innovation_measures.log", replace
+
+* Set working directory (adjust path as needed)
+cap cd "./data"
+
+/*==============================================================================
+ * 1. DATA LOADING AND PREPARATION
+ *==============================================================================*/
+
+display "Loading main patent dataset..."
+import delimited "final_fwdcitation.csv", clear stringcols(1)
+rename patent_id patent_id_str
+gen patent_id = patent_id_str
+save "temp_patents.dta", replace
+
+display "Loading CPC classification data..."
+import delimited "g_cpc_current.tsv", clear stringcols(1) delimiter(tab)
+keep patent_id cpc_sequence cpc_subclass cpc_group
+
+* Group by patent_id and create sets of CPC subclasses for each patent
+* Remove duplicates to create unique patent-subclass combinations (similar to set() in Python)
+duplicates drop patent_id cpc_subclass, force
+keep patent_id cpc_subclass
+
+* Create a string variable that contains all CPC subclasses for each patent (space-separated)
+bysort patent_id: gen subclass_order = _n
+bysort patent_id: gen total_subclasses = _N
+
+* Reshape to create one observation per patent with all subclasses
+preserve
+keep patent_id cpc_subclass subclass_order total_subclasses
+reshape wide cpc_subclass, i(patent_id) j(subclass_order)
+
+* Create a single string variable containing all subclasses (space-separated set)
+egen cpc_subclass_set = concat(cpc_subclass*), punct(" ")
+keep patent_id cpc_subclass_set total_subclasses
+
+* Clean up the set string (remove extra spaces)
+replace cpc_subclass_set = trim(cpc_subclass_set)
+save "temp_cpc_sets.dta", replace
+restore
+
+save "temp_cpc.dta", replace
+
+display "Loading citation data..."
+import delimited "g_us_patent_citation.tsv", clear stringcols(1 3) delimiter(tab)
+keep patent_id citation_sequence citation_patent_id
+save "temp_citations.dta", replace
+
+/*==============================================================================
+ * 2. ATYPICALITY SCORE CALCULATION
+ *==============================================================================*/
+
+display ""
+display "=========================================="
+display "CALCULATING ATYPICALITY SCORE"
+display "=========================================="
+
+* Step 1: Create patent-CPC subclass mapping using the sets we created
+use "temp_cpc_sets.dta", clear
+merge 1:1 patent_id using "temp_patents.dta", keep(match) nogenerate
+
+* For patents with no CPC subclasses, set empty set
+replace cpc_subclass_set = "" if missing(cpc_subclass_set)
+replace total_subclasses = 0 if missing(total_subclasses)
+
+* Now expand back to long format for pair generation, but only for patents with 2+ subclasses
+keep if total_subclasses >= 2
+
+* Split the CPC subclass set back into individual observations
+split cpc_subclass_set, parse(" ") gen(cpc_sub)
+
+* Reshape to long format
+local maxsubs = total_subclasses[1]
+forvalues i = 1/`maxsubs' {
+    quietly count if !missing(cpc_sub`i')
+    if r(N) == 0 continue, break
+    local maxsubs = `i'
+}
+
+* Create long format dataset
+preserve
+keep patent_id cpc_sub1-cpc_sub`maxsubs'
+reshape long cpc_sub, i(patent_id) j(subclass_num)
+drop if missing(cpc_sub)
+rename cpc_sub cpc_subclass
+tempfile patent_subclass_long
+save `patent_subclass_long'
+restore
+
+* Use the long format for pair generation
+use `patent_subclass_long', clear
+
+* Step 2: Generate all possible CPC subclass pairs for each patent
+display "Generating CPC subclass pairs for each patent..."
+
+* First, number the subclasses within each patent
+// bysort patent_id: gen subclass_num = _n
+bysort patent_id: gen total_subclasses = _N
+
+* Create pairs using cross-join approach
+* Expand dataset to create all combinations
+tempfile patent_subclass
+save `patent_subclass'
+
+* Self-join to create pairs
+rename cpc_subclass cpc_subclass1
+rename subclass_num subclass_num1
+joinby patent_id using `patent_subclass'
+rename cpc_subclass cpc_subclass2
+rename subclass_num subclass_num2
+
+* Keep only valid pairs (subclass1 < subclass2 to avoid duplicates)
+keep if subclass_num1 < subclass_num2
+drop subclass_num1 subclass_num2 total_subclasses
+
+* Create ordered pair identifier
+gen pair_id = cpc_subclass1 + "_" + cpc_subclass2 if cpc_subclass1 < cpc_subclass2
+replace pair_id = cpc_subclass2 + "_" + cpc_subclass1 if cpc_subclass1 >= cpc_subclass2
+
+* Step 3: Count occurrences of each pair
+display "Counting pair occurrences..."
+preserve
+contract pair_id, freq(pair_count)
+gen total_pairs = sum(pair_count)
+replace total_pairs = total_pairs[_N]
+save "temp_pair_counts.dta", replace
+restore
+
+* Step 4: Calculate atypicality score for each pair
+merge m:1 pair_id using "temp_pair_counts.dta", nogenerate
+gen pair_atypicality = -ln(pair_count/total_pairs)
+
+* Step 5: Calculate patent-level atypicality score
+display "Calculating patent-level atypicality scores..."
+collapse (mean) atypicality_score=pair_atypicality (count) num_pairs=pair_atypicality, by(patent_id)
+
+* Merge back with all patents (including those with <2 CPC subclasses)
+merge 1:1 patent_id using "temp_patents.dta", nogenerate
+replace atypicality_score = . if num_pairs == 0
+replace num_pairs = 0 if missing(num_pairs)
+
+save "temp_atypicality.dta", replace
+
+display "Atypicality score calculation completed."
+display "Patents with valid atypicality scores: " _N - sum(missing(atypicality_score))
+display "Patents with missing atypicality scores: " sum(missing(atypicality_score))
+
+/*==============================================================================
+ * 3. TECHNOLOGICAL LEAP SCORE CALCULATION
+ *==============================================================================*/
+
+display ""
+display "=========================================="
+display "CALCULATING TECHNOLOGICAL LEAP SCORE"
+display "=========================================="
+
+* Step 1: Create backward citation mapping
+use "temp_citations.dta", clear
+keep patent_id citation_patent_id
+rename citation_patent_id cited_patent_id
+
+* Step 2: Get CPC subclasses for citing patents using the sets
+merge m:1 patent_id using "temp_cpc_sets.dta", keep(match master) nogenerate
+rename cpc_subclass_set citing_cpc_set
+drop total_subclasses
+
+* Step 3: Get CPC subclasses for cited patents using the sets
+rename patent_id temp_patent
+rename cited_patent_id patent_id
+merge m:1 patent_id using "temp_cpc_sets.dta", keep(match master) nogenerate
+rename patent_id cited_patent_id
+rename temp_patent patent_id
+rename cpc_subclass_set cited_cpc_set
+
+* Step 4: Calculate intersection and union for each patent using string operations
+display "Calculating CPC subclass intersections and unions..."
+
+* Handle missing CPC sets
+replace citing_cpc_set = "" if missing(citing_cpc_set)
+replace cited_cpc_set = "" if missing(cited_cpc_set)
+
+* For each patent, calculate intersection and union of CPC subclasses
+gen intersection_count = 0
+gen union_count = 0
+
+* Split citing and cited CPC sets into individual subclasses and count overlaps
+* This is a simplified approach - in practice you'd want a more sophisticated string matching
+* For now, we'll use the original individual CPC approach but with the set structure
+
+* Get individual CPC subclasses for intersection/union calculation
+tempfile patent_citations
+save `patent_citations'
+
+* Expand citing CPC sets
+keep if citing_cpc_set != ""
+split citing_cpc_set, parse(" ") gen(citing_cpc)
+drop citing_cpc_set cited_cpc_set
+reshape long citing_cpc, i(patent_id cited_patent_id) j(citing_order)
+drop if missing(citing_cpc)
+tempfile citing_expanded
+save `citing_expanded'
+
+* Expand cited CPC sets
+use `patent_citations', clear
+keep if cited_cpc_set != ""
+split cited_cpc_set, parse(" ") gen(cited_cpc)
+drop citing_cpc_set cited_cpc_set
+reshape long cited_cpc, i(patent_id cited_patent_id) j(cited_order)
+drop if missing(cited_cpc)
+
+* Merge with citing CPC to find intersections
+merge m:m patent_id cited_patent_id using `citing_expanded'
+gen is_intersection = (_merge == 3 & citing_cpc == cited_cpc)
+gen is_in_union = 1
+
+* Calculate intersection and union counts by patent
+collapse (sum) intersection_count=is_intersection (count) total_cited_cpc=cited_cpc, by(patent_id)
+
+* Add citing-only CPC subclasses to union count
+merge 1:m patent_id using `citing_expanded', nogenerate
+collapse (sum) intersection_count (first) total_cited_cpc (count) total_citing_cpc=citing_cpc, by(patent_id)
+
+* Calculate final union count (unique CPC subclasses in either citing or cited patents)
+replace total_cited_cpc = 0 if missing(total_cited_cpc)
+replace total_citing_cpc = 0 if missing(total_citing_cpc)
+gen union_count = total_cited_cpc + total_citing_cpc - intersection_count
+
+* Step 5: Calculate technological leap score
+gen tech_leap_score = .
+replace tech_leap_score = . if union_count == 0
+replace tech_leap_score = 1 if union_count > 0 & intersection_count == 0
+replace tech_leap_score = 1 - (intersection_count/union_count) if union_count > 0 & intersection_count > 0
+
+* Merge with all patents
+merge 1:1 patent_id using "temp_patents.dta", nogenerate
+
+save "temp_tech_leap.dta", replace
+
+display "Technological leap score calculation completed."
+display "Patents with valid tech leap scores: " _N - sum(missing(tech_leap_score))
+display "Patents with missing tech leap scores: " sum(missing(tech_leap_score))
+
+/*==============================================================================
+ * 4. FORWARD CITATION IMPACT SCORE CALCULATION
+ *==============================================================================*/
+
+display ""
+display "=========================================="
+display "CALCULATING FORWARD CITATION IMPACT SCORE"
+display "=========================================="
+
+* Step 1: Create forward citation mapping (reverse the citation direction)
+use "temp_citations.dta", clear
+rename patent_id citing_patent_id
+rename citation_patent_id patent_id
+keep patent_id citing_patent_id
+
+* Step 2: Get CPC subclasses for forward citing patents using sets
+merge m:1 citing_patent_id using "temp_cpc_sets.dta", keep(match master) nogenerate
+rename citing_patent_id temp_patent
+rename patent_id cited_patent_id  
+rename temp_patent patent_id
+rename cpc_subclass_set citing_cpc_set
+drop total_subclasses
+
+* Step 3: Calculate entropy of CPC subclasses in forward citations
+display "Calculating entropy of forward citation CPC subclasses..."
+
+* Expand the CPC sets for entropy calculation
+keep if citing_cpc_set != ""
+split citing_cpc_set, parse(" ") gen(citing_cpc)
+drop citing_cpc_set
+reshape long citing_cpc, i(cited_patent_id patent_id) j(cpc_order)
+drop if missing(citing_cpc)
+
+* Count CPC subclass frequencies for each cited patent
+rename cited_patent_id patent_id
+contract patent_id citing_cpc, freq(cpc_freq)
+
+* Calculate total CPC subclasses per patent and probabilities
+bysort patent_id: egen total_cpc = sum(cpc_freq)
+gen probability = cpc_freq / total_cpc
+
+* Calculate entropy: -sum(p_i * ln(p_i))
+gen entropy_component = probability * ln(probability)
+collapse (sum) entropy_sum=entropy_component (first) total_cpc, by(patent_id)
+gen cpc_entropy = -entropy_sum
+drop entropy_sum
+
+* Step 4: Calculate forward citation impact score
+merge 1:1 patent_id using "temp_patents.dta", nogenerate
+gen fwd_citation_impact_score = cpc_entropy * forward_citations
+replace fwd_citation_impact_score = . if missing(cpc_entropy)
+
+save "temp_fwd_impact.dta", replace
+
+display "Forward citation impact score calculation completed."
+display "Patents with valid impact scores: " _N - sum(missing(fwd_citation_impact_score))
+display "Patents with missing impact scores: " sum(missing(fwd_citation_impact_score))
+
+/*==============================================================================
+ * 5. MERGE ALL MEASURES AND CREATE FINAL DATASET
+ *==============================================================================*/
+
+display ""
+display "=========================================="
+display "CREATING FINAL MERGED DATASET"
+display "=========================================="
+
+* Start with main patent dataset
+use "temp_patents.dta", clear
+
+* Merge atypicality scores
+merge 1:1 patent_id using "temp_atypicality.dta", keepusing(atypicality_score num_pairs) nogenerate
+
+* Merge technological leap scores  
+merge 1:1 patent_id using "temp_tech_leap.dta", keepusing(tech_leap_score intersection_count union_count) nogenerate
+
+* Merge forward citation impact scores
+merge 1:1 patent_id using "temp_fwd_impact.dta", keepusing(fwd_citation_impact_score cpc_entropy) nogenerate
+
+* Label variables
+label variable patent_id "Patent ID"
+label variable forward_citations "Number of forward citations"
+label variable atypicality_score "Atypicality Score (average of CPC pair atypicalities)"
+label variable num_pairs "Number of CPC subclass pairs"
+label variable tech_leap_score "Technological Leap Score (1 - Jaccard similarity)"
+label variable intersection_count "Number of overlapping CPC subclasses with cited patents"
+label variable union_count "Total unique CPC subclasses (patent + cited patents)"
+label variable fwd_citation_impact_score "Forward Citation Impact Score (entropy × citations)"
+label variable cpc_entropy "Entropy of CPC subclasses in forward citations"
+
+/*==============================================================================
+ * 6. SUMMARY STATISTICS AND VALIDATION
+ *==============================================================================*/
+
+display ""
+display "=========================================="
+display "SUMMARY STATISTICS"
+display "=========================================="
+
+* Overall dataset summary
+display "Total number of patents: " _N
+
+* Atypicality Score statistics
+display ""
+display "ATYPICALITY SCORE STATISTICS:"
+display "================================"
+count if !missing(atypicality_score)
+local valid_atyp = r(N)
+count if missing(atypicality_score)
+local missing_atyp = r(N)
+display "Non-null values: " `valid_atyp'
+display "Null values: " `missing_atyp'
+summarize atypicality_score, detail
+
+* Technological Leap Score statistics  
+display ""
+display "TECHNOLOGICAL LEAP SCORE STATISTICS:"
+display "===================================="
+count if !missing(tech_leap_score)
+local valid_tech = r(N)
+count if missing(tech_leap_score)
+local missing_tech = r(N)
+display "Non-null values: " `valid_tech'
+display "Null values: " `missing_tech'
+summarize tech_leap_score, detail
+
+* Forward Citation Impact Score statistics
+display ""
+display "FORWARD CITATION IMPACT SCORE STATISTICS:"
+display "========================================"
+count if !missing(fwd_citation_impact_score)
+local valid_fwd = r(N)
+count if missing(fwd_citation_impact_score)
+local missing_fwd = r(N)
+display "Non-null values: " `valid_fwd'
+display "Null values: " `missing_fwd'
+summarize fwd_citation_impact_score, detail
+
+/*==============================================================================
+ * 7. SAVE FINAL RESULTS
+ *==============================================================================*/
+
+* Save the final dataset
+save "patents_with_innovation_measures.dta", replace
+export delimited "patents_with_innovation_measures.csv", replace
+
+display ""
+display "=========================================="
+display "CALCULATION COMPLETED SUCCESSFULLY"
+display "=========================================="
+display "Final dataset saved as:"
+display "  - patents_with_innovation_measures.dta"
+display "  - patents_with_innovation_measures.csv"
+
+/*==============================================================================
+ * 8. CLEANUP TEMPORARY FILES
+ *==============================================================================*/
+
+* Remove temporary files
+capture erase "temp_patents.dta"
+capture erase "temp_cpc.dta" 
+capture erase "temp_cpc_sets.dta"
+capture erase "temp_citations.dta"
+capture erase "temp_pair_counts.dta"
+capture erase "temp_atypicality.dta"
+capture erase "temp_tech_leap.dta"
+capture erase "temp_fwd_impact.dta"
+
+display ""
+display "Temporary files cleaned up."
+display "Log file: patent_innovation_measures.log"
+
+log close
+
+/*==============================================================================
+ * END OF DO-FILE
+ *==============================================================================*/
